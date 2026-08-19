@@ -39,18 +39,26 @@ export default function App() {
     function handlePointerDown(event) {
       const drawer = document.querySelector('.history-drawer');
       const toggle = document.querySelector('.history-toggle');
+      const backdrop = document.querySelector('.history-backdrop');
+
       if (!drawer || !toggle) return;
 
       const clickedInsideDrawer = drawer.contains(event.target);
       const clickedToggle = toggle.contains(event.target);
+      const clickedBackdrop = backdrop ? backdrop.contains(event.target) : false;
 
-      if (!clickedInsideDrawer && !clickedToggle) {
+      if (!clickedInsideDrawer && !clickedToggle && !clickedBackdrop) {
         setHistoryOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown, { passive: true });
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
   }, [historyOpen]);
 
   async function loadHistory() {

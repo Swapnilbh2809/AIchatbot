@@ -1,4 +1,9 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3060";
+const fallbackApiUrl =
+  typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:3060`
+    : "http://localhost:3060";
+
+const API_URL = import.meta.env.VITE_API_URL || fallbackApiUrl;
 
 export async function request(path, identity, options = {}) {
   const headers = { "Content-Type": "application/json" };
