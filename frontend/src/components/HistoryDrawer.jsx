@@ -1,6 +1,6 @@
 export default function HistoryDrawer({ conversations, activeId, onOpen, onDelete, onNew, onClose }) {
   return (
-    <aside className="history-drawer">
+    <aside className="history-drawer" onClick={(event) => event.stopPropagation()}>
       <div className="history-heading">
         <div><p className="eyebrow">Your archive</p><h2>Past chats</h2></div>
         <button onClick={onClose} aria-label="Close history">×</button>
