@@ -6,24 +6,24 @@ This application demonstrates a clean, responsive user interface, robust schema 
 
 ---
 
-## 🚀 Deployed URL
+## Deployed URL
 * **Frontend:** [https://aichatbot-zeta-ochre.vercel.app/](https://aichatbot-zeta-ochre.vercel.app/)
-* **Backend Status Health Check:** [https://cyvigilant-support-backend.onrender.com/api/health](https://cyvigilant-support-backend.onrender.com/api/health) *(Hosted on Render)*
+* **Backend Status Health Check:** https://aichatbot-79nb.onrender.com *(Hosted on Render)*
 
 ---
 
-## 🛠️ Technology Stack & AI Integration
+## Tech-Stack & AI Integration
 
 * **Frontend:** React.js, Vite, Vanilla CSS (designed with responsive glassmorphism styles).
 * **Backend:** Node.js, Express.js (v5.x), Mongoose.
-* **Database:** MongoDB (Local or Atlas).
-* **AI Provider:** **Google Gemini API** using the official, high-efficiency `@google/genai` SDK and the `gemini-3.6-flash` model.
+* **Database:** MongoDB (Atlas).
+* **AI Provider:** **Google Gemini API** using the official, high-efficiency `@google/genai` SDK and the `gemini-3.6-flash`(cause it was free and fastest available) model.
 
 ---
 
-## 🗄️ Data Modeling & Design Choices
+## Data Modeling
 
-The database is built on a single collection designed for optimal conversational access speeds and simplicity.
+The database is built on a single collection designed for simplicity.
 
 ### Collection: `conversations`
 Mongoose schema structure:
@@ -130,7 +130,7 @@ CyVigilant_cs/
 
 ---
 
-## 🛠️ API Documentation
+## API Documentation
 
 ### `POST /api/chat`
 Creates or appends a message to a conversation thread.
@@ -169,13 +169,3 @@ Permanently deletes a conversation from history.
 ### `GET /api/health`
 Responds with server uptime and current database connection status.
 
----
-
-## ✨ Added Enhancements (Evaluator Considerations)
-
-* **Dual Login Flow:** Supports typing a display name for quick guest testing OR logging in securely using the official Google Identity Services library.
-* **Strict Schema Validation:** All payloads are validated using Express request sanitization rules to block long scripts or malformed MongoDB IDs.
-* **Auto-Scrolling Chat Area:** Integrates smooth-scroll listeners which scroll to the latest message without causing rendering loop crashes.
-* **Typing Indicator Animation:** Visually animates a pulsing loading state while waiting for the Gemini API streams.
-* **Polished Responsive Styles:** Designed with custom typography and modern dark mode glassmorphism panels.
-* **Graceful Failure Framework:** If Gemini fails or the database drops, requests return explicit, actionable JSON errors to the frontend without crashing the thread context.
