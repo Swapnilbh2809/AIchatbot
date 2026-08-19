@@ -31,11 +31,11 @@ export default function IdentityPrompt({ onContinue, error }) {
   return (
     <main className="identity-screen">
       <section className="identity-prompt" aria-labelledby="welcome-title">
-        <div className="brand-mark">C<span>·</span>V</div>
+        
 
         <h1 id="welcome-title">AI ChatBot</h1>
         <form className="name-form" onSubmit={submit}>
-\          <div className="name-row">
+        <div className="name-row">
             <input id="visitor-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Type your name" maxLength={80} autoFocus />
             <button type="submit">Let's Begin <span aria-hidden="true">→</span></button>
           </div>
