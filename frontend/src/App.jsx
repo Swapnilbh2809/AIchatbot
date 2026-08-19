@@ -11,13 +11,23 @@ const starterMessage = {
 };
 
 function profileFromToken(token) {
-  const payload = token
-    .split(".")[1]
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-
-  return JSON.parse(window.atob(payload));
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, "=");
+    const jsonPayload = decodeURIComponent(
+      window.atob(padded)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Failed to parse Google ID token:", error);
+    return {};
+  }
 }
+
 
 export default function App() {
   const [identity, setIdentity] = useState(null);

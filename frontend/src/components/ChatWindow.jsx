@@ -3,7 +3,9 @@ import { useEffect, useRef } from "react";
 export default function ChatWindow({ user, messages, draft, loading, error, onDraftChange, onSend }) {
   const endRef = useRef(null);
 
-  useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, loading]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   const normalizedMessages = Array.isArray(messages) ? messages : [];
 
@@ -21,7 +23,7 @@ export default function ChatWindow({ user, messages, draft, loading, error, onDr
 
           return (
             <div className={`message-row ${role}`} key={`${message?.createdAt || "message"}-${index}`}>
-              <div className="avatar">{role === "assistant" ? "C" : user.name.charAt(0).toUpperCase()}</div>
+              <div className="avatar">{role === "assistant" ? "C" : (user?.name ? user.name.charAt(0).toUpperCase() : "?")}</div>
               <div className="bubble">
                 <p>{text}</p>
                 <time>{role === "assistant" ? "CyVigilant assistant" : "You"}</time>
