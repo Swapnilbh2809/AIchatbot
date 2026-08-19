@@ -5,11 +5,30 @@ export default function ChatWindow({ user, messages, draft, loading, error, onDr
 
   useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, loading]);
 
+  const normalizedMessages = Array.isArray(messages) ? messages : [];
+
   return (
     <section className="chat-card" aria-label="Support conversation">
       <div className="chat-header"><div><strong>CyVigilant assistant</strong><span>Typically replies in a few seconds</span></div><span className="live-badge">LIVE</span></div>
       <div className="messages" aria-live="polite">
-        {messages.map((message, index) => <div className={`message-row ${message.role}`} key={`${message.createdAt || "message"}-${index}`}><div className="avatar">{message.role === "assistant" ? "C" : user.name.charAt(0).toUpperCase()}</div><div className="bubble"><p>{message.content}</p><time>{message.role === "assistant" ? "CyVigilant assistant" : "You"}</time></div></div>)}
+        {normalizedMessages.map((message, index) => {
+          const role = message?.role === "user" ? "user" : "assistant";
+          const text = typeof message?.content === "string"
+            ? message.content
+            : typeof message?.text === "string"
+              ? message.text
+              : "";
+
+          return (
+            <div className={`message-row ${role}`} key={`${message?.createdAt || "message"}-${index}`}>
+              <div className="avatar">{role === "assistant" ? "C" : user.name.charAt(0).toUpperCase()}</div>
+              <div className="bubble">
+                <p>{text}</p>
+                <time>{role === "assistant" ? "CyVigilant assistant" : "You"}</time>
+              </div>
+            </div>
+          );
+        })}
         {loading && <div className="message-row assistant"><div className="avatar">C</div><div className="bubble typing"><span /><span /><span /></div></div>}
         <div ref={endRef} />
       </div>
