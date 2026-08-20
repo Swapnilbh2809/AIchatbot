@@ -43,7 +43,7 @@ Mongoose schema structure:
 
 ---
 
-## 📂 Project Organization
+##  Project Organization
 
 The repository is divided into two self-contained directories:
 
@@ -70,7 +70,7 @@ CyVigilant_cs/
 
 ---
 
-## ⚙️ Environment Configuration & Installation
+## Environment Configuration & Installation
 
 ### Prerequisites
 * Node.js 18 or newer.
