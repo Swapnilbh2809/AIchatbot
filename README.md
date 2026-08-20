@@ -8,13 +8,13 @@ This application demonstrates a clean, responsive user interface, robust schema 
 
 ## Deployed URL
 * **Frontend:** [https://aichatbot-zeta-ochre.vercel.app/](https://aichatbot-zeta-ochre.vercel.app/)
-* **Backend Status Health Check:** https://aichatbot-79nb.onrender.com *(Hosted on Render)*
+* **Backend Status Health Check:** https://aichatbot-79nb.onrender.com/api/health *(Hosted on Render)*
 
 ---
 
 ## Tech-Stack & AI Integration
 
-* **Frontend:** React.js, Vite, Vanilla CSS (designed with responsive glassmorphism styles).
+* **Frontend:** React.js, Vite, Vanilla js.
 * **Backend:** Node.js, Express.js (v5.x), Mongoose.
 * **Database:** MongoDB (Atlas).
 * **AI Provider:** **Google Gemini API** using the official, high-efficiency `@google/genai` SDK and the `gemini-3.6-flash`(cause it was free and fastest available) model.
