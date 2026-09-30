@@ -11,19 +11,26 @@ import { OAuth2Client } from "google-auth-library";
 // ENVIRONMENT
 // ============================================================
 
-dotenv.config({ path: new URL("../.env", import.meta.url) });
+dotenv.config({ path: new URL("./.env", import.meta.url) });
 
 
 // ============================================================
 // DNS CONFIGURATION
 // ============================================================
 
-const dnsServers = (process.env.DNS_SERVERS || "8.8.8.8,1.1.1.1")
-    .split(",")
-    .map((server) => server.trim())
-    .filter(Boolean);
-
-dns.setServers(dnsServers);
+try {
+    if (process.env.DNS_SERVERS) {
+        const dnsServers = process.env.DNS_SERVERS
+            .split(",")
+            .map((server) => server.trim())
+            .filter(Boolean);
+        if (dnsServers.length > 0) {
+            dns.setServers(dnsServers);
+        }
+    }
+} catch (dnsErr) {
+    console.warn("DNS configuration warning:", dnsErr.message);
+}
 
 
 // ============================================================
@@ -36,7 +43,7 @@ const port = Number(process.env.PORT) || 3060;
 
 const mongoUri =
     process.env.MONGODB_URI ||
-    "mongodb://127.0.0.1:27017/cyvigilant_support";
+    "mongodb://127.0.0.1:27017/aichatbot";
 
 const allowedOrigins =
     process.env.FRONTEND_URL
@@ -118,7 +125,7 @@ const conversationSchema = new mongoose.Schema(
 
         title: {
             type: String,
-            default: "New support conversation",
+            default: "New conversation",
             maxlength: 120
         }
     },
@@ -210,6 +217,33 @@ function formatConversation(messages) {
     }));
 }
 
+async function generateAIResponse(messages, retries = 2) {
+    const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+    const contents = formatConversation(messages);
+    const config = {
+        systemInstruction:
+            "You are an advanced, intelligent, and helpful AI Chatbot. Provide clear, accurate, thoughtful, and practical responses across any topic. Format your answers cleanly using Markdown, including bullet points, numbered lists, and code blocks with language tags when appropriate. Maintain an encouraging and professional tone.",
+        temperature: 0.5
+    };
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const response = await ai.models.generateContent({
+                model,
+                contents,
+                config
+            });
+            const text = response.text?.trim();
+            if (text) return text;
+        } catch (err) {
+            if (attempt === retries) throw err;
+            console.warn(`Gemini attempt ${attempt + 1} failed (${err.message}). Retrying in 1s...`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+    }
+    throw new Error("Gemini returned an empty response");
+}
+
 
 // ============================================================
 // HEALTH ROUTE
@@ -284,33 +318,10 @@ app.post(
                 content: input.message
             });
 
-            const response =
-                await ai.models.generateContent({
-                    model:
-                        process.env.GEMINI_MODEL ||
-                        "gemini-3.6-flash",
-
-                    contents:
-                        formatConversation(
-                            conversation.messages
-                        ),
-
-                    config: {
-                        systemInstruction:
-                            "You are CyVigilant's friendly customer support assistant. Give concise, accurate, practical help. Never invent account-specific information. If you do not know something, say so and suggest contacting a human agent.",
-
-                        temperature: 0.4
-                    }
-                });
-
             const assistantMessage =
-                response.text?.trim();
-
-            if (!assistantMessage) {
-                throw new Error(
-                    "Gemini returned an empty response"
+                await generateAIResponse(
+                    conversation.messages
                 );
-            }
 
             conversation.messages.push({
                 role: "assistant",
@@ -338,7 +349,7 @@ app.post(
 
             res.status(502).json({
                 error:
-                    "The support assistant is temporarily unavailable. Please try again."
+                    "The AI assistant is temporarily unavailable. Please try again."
             });
         }
     }
@@ -489,20 +500,23 @@ app.delete(
 
 // DATABASE CONNECTION & SERVER STARTUP
 
-mongoose
-    .connect(mongoUri)
-    .then(() => {
-        app.listen(
-            port,
-            () => {
-                console.log(
-                    `backend working on port :${port}`
-                );
-            }
-        );
-    })
-    .catch((error) => {
-        console.error(
-            `MongoDB connection failed: ${error.message}`
-        );
-    });
+async function initDatabase() {
+    try {
+        await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+        console.log("Connected to MongoDB successfully");
+    } catch (primaryError) {
+        console.warn(`Primary MongoDB connection failed (${primaryError.message}). Trying local fallback...`);
+        try {
+            await mongoose.connect("mongodb://127.0.0.1:27017/aichatbot", { serverSelectionTimeoutMS: 5000 });
+            console.log("Connected to local MongoDB (mongodb://127.0.0.1:27017/aichatbot)");
+        } catch (fallbackError) {
+            console.error(`MongoDB connection failed: ${fallbackError.message}`);
+        }
+    }
+}
+
+initDatabase();
+
+app.listen(port, () => {
+    console.log(`Backend server running on http://localhost:${port}`);
+});

@@ -7,16 +7,18 @@ import ChatWindow from "./components/ChatWindow";
 const starterMessage = {
   role: "assistant",
   content:
-    "Hi, I'm your CyVigilant support assistant. Tell me what you need help with and I'll point you in the right direction.",
+    "Hello! I'm your AI Chatbot. I can help answer questions, write and debug code, draft content, analyze problems, and much more. What would you like to work on today?",
+  createdAt: new Date().toISOString(),
 };
 
 function profileFromToken(token) {
   try {
     const base64Url = token.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, "=");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
     const jsonPayload = decodeURIComponent(
-      window.atob(padded)
+      window
+        .atob(padded)
         .split("")
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
@@ -27,7 +29,6 @@ function profileFromToken(token) {
     return {};
   }
 }
-
 
 export default function App() {
   const [identity, setIdentity] = useState(null);
@@ -47,9 +48,9 @@ export default function App() {
     if (!historyOpen) return;
 
     function handlePointerDown(event) {
-      const drawer = document.querySelector('.history-drawer');
-      const toggle = document.querySelector('.history-toggle');
-      const backdrop = document.querySelector('.history-backdrop');
+      const drawer = document.querySelector(".history-drawer");
+      const toggle = document.querySelector(".history-toggle-btn");
+      const backdrop = document.querySelector(".history-backdrop");
 
       if (!drawer || !toggle) return;
 
@@ -62,12 +63,12 @@ export default function App() {
       }
     }
 
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('touchstart', handlePointerDown, { passive: true });
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, { passive: true });
 
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('touchstart', handlePointerDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
     };
   }, [historyOpen]);
 
@@ -77,12 +78,8 @@ export default function App() {
         ? ""
         : `?userName=${encodeURIComponent(identity.name)}`;
 
-      const data = await request(
-        `/api/chat/history${query}`,
-        identity
-      );
-
-      setConversations(data.conversations);
+      const data = await request(`/api/chat/history${query}`, identity);
+      setConversations(data.conversations || []);
     } catch (requestError) {
       setError(requestError.message);
     }
@@ -91,7 +88,6 @@ export default function App() {
   function continueAs(nextIdentity) {
     if (nextIdentity.token) {
       const profile = profileFromToken(nextIdentity.token);
-
       setIdentity({
         token: nextIdentity.token,
         name: profile.name || profile.email,
@@ -110,13 +106,9 @@ export default function App() {
 
   async function openConversation(id) {
     try {
-      const data = await request(
-        `/api/chat/history/${id}`,
-        identity
-      );
-
+      const data = await request(`/api/chat/history/${id}`, identity);
       setConversationId(id);
-      setMessages(data.conversation.messages);
+      setMessages(data.conversation.messages || []);
       setHistoryOpen(false);
       setError("");
     } catch (requestError) {
@@ -126,20 +118,13 @@ export default function App() {
 
   async function deleteConversation(event, id) {
     event.stopPropagation();
-
     try {
-      await request(
-        `/api/chat/history/${id}`,
-        identity,
-        {
-          method: "DELETE",
-        }
-      );
+      await request(`/api/chat/history/${id}`, identity, {
+        method: "DELETE",
+      });
 
       setConversations((current) =>
-        current.filter(
-          (conversation) => conversation._id !== id
-        )
+        current.filter((conversation) => conversation._id !== id)
       );
 
       if (conversationId === id) {
@@ -151,10 +136,8 @@ export default function App() {
   }
 
   async function sendMessage(event) {
-    event.preventDefault();
-
+    if (event) event.preventDefault();
     const message = draft.trim();
-
     if (!message || loading) return;
 
     setDraft("");
@@ -165,40 +148,33 @@ export default function App() {
       {
         role: "user",
         content: message,
+        createdAt: new Date().toISOString(),
       },
     ]);
 
     setLoading(true);
 
     try {
-      const data = await request(
-        "/api/chat",
-        identity,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            conversationId,
-            userName: identity.name,
-            message,
-          }),
-        }
-      );
+      const data = await request("/api/chat", identity, {
+        method: "POST",
+        body: JSON.stringify({
+          conversationId,
+          userName: identity.name,
+          message,
+        }),
+      });
 
       const assistantReply = {
         role: "assistant",
         content:
           data?.message?.content ||
           data?.reply ||
-          "I’m here to help. Please try again.",
+          "I'm here to help. What would you like to explore next?",
+        createdAt: data?.message?.createdAt || new Date().toISOString(),
       };
 
       setConversationId(data.conversationId);
-
-      setMessages((current) => [
-        ...current,
-        assistantReply,
-      ]);
-
+      setMessages((current) => [...current, assistantReply]);
       await loadHistory();
     } catch (requestError) {
       setError(requestError.message);
@@ -224,49 +200,96 @@ export default function App() {
   }
 
   if (!identity) {
-    return (
-      <IdentityPrompt
-        onContinue={continueAs}
-        error={error}
-      />
-    );
+    return <IdentityPrompt onContinue={continueAs} error={error} />;
   }
 
   return (
-    <main className="app-shell">
+    <div className="app-layout">
+      {/* Ambient background glows */}
+      <div className="ambient-glow glow-1" aria-hidden="true" />
+      <div className="ambient-glow glow-2" aria-hidden="true" />
+
+      {/* Top Navigation Bar */}
       <header className="topbar">
-        <button
-          className="history-toggle"
-          onClick={() => setHistoryOpen((open) => !open)}
-          aria-expanded={historyOpen}
-        >
-          ☰ <span>History</span>
-        </button>
-
-        <div className="brand-mark small">
-          C<span>·</span>V
-        </div>
-
-        <div className="topbar-label">
-          Support desk <span>/</span> Live assistant
-        </div>
-
-        <div className="account">
-          <span>{identity.name}</span>
-
-          <button onClick={signOut}>
-            Sign out
+        <div className="topbar-left">
+          <button
+            type="button"
+            className="history-toggle-btn"
+            onClick={() => setHistoryOpen((open) => !open)}
+            aria-expanded={historyOpen}
+            aria-label="Toggle history menu"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <span>History</span>
+            {conversations.length > 0 && (
+              <span className="count-pill">{conversations.length}</span>
+            )}
           </button>
+
+          <button
+            type="button"
+            className="new-chat-top-btn"
+            onClick={startNewConversation}
+            title="Start new conversation"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>New Chat</span>
+          </button>
+        </div>
+
+        <div className="topbar-center">
+          <div className="brand-badge">
+            <div className="brand-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </div>
+            <span className="brand-name">AI Chatbot</span>
+            <span className="live-indicator">LIVE</span>
+          </div>
+        </div>
+
+        <div className="topbar-right">
+          <div className="user-profile-chip">
+            <div className="user-avatar-badge">
+              {identity.name ? identity.name.charAt(0).toUpperCase() : "U"}
+            </div>
+            <span className="user-display-name">{identity.name}</span>
+            <button
+              type="button"
+              className="sign-out-btn"
+              onClick={signOut}
+              title="Sign out"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
+      {/* History Slide-out Drawer */}
       {historyOpen && (
         <>
-          <button
-            type="button"
+          <div
             className="history-backdrop"
-            aria-label="Close history"
             onClick={() => setHistoryOpen(false)}
+            aria-hidden="true"
           />
           <HistoryDrawer
             conversations={conversations}
@@ -279,32 +302,21 @@ export default function App() {
         </>
       )}
 
-      <section className="centered-chat-layout">
-        <div className="chat-intro">
-          <p className="eyebrow">
-            Your conversation
-          </p>
-
-          <h1>
-            How can we help?
-          </h1>
-
-          <p>
-            Ask anything about CyVigilant. This chat is saved under{" "}
-            <strong>{identity.name}</strong>.
-          </p>
+      {/* Main Chat Layout Area */}
+      <main className="main-content">
+        <div className="chat-container-wrap">
+          <ChatWindow
+            user={identity}
+            messages={messages}
+            draft={draft}
+            loading={loading}
+            error={error}
+            onDraftChange={setDraft}
+            onSend={sendMessage}
+            onNewChat={startNewConversation}
+          />
         </div>
-
-        <ChatWindow
-          user={identity}
-          messages={messages}
-          draft={draft}
-          loading={loading}
-          error={error}
-          onDraftChange={setDraft}
-          onSend={sendMessage}
-        />
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

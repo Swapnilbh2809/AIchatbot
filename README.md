@@ -1,171 +1,196 @@
-# CyVigilant AI Customer Support Assistant
+# AI Chatbot
 
-An AI-powered customer support chatbot built with **React**, **Node.js**, **Express**, **MongoDB**, and **Google Gemini API**. 
+An intelligent, full-stack conversational AI application built with React, Node.js, Express, MongoDB, and the Google Gemini API using the official `@google/genai` SDK.
 
-This application demonstrates a clean, responsive user interface, robust schema validation, secure Google OAuth authentication, and error resilience.
+This project includes a polished dark-mode interface, guest and Google auth flows, persistent conversation history, markdown rendering, and AI-powered chat responses.
 
 ---
 
 ## Deployed URL
-* **Frontend:** [https://aichatbot-zeta-ochre.vercel.app/](https://aichatbot-zeta-ochre.vercel.app/)
-* **Backend Status Health Check:** https://aichatbot-79nb.onrender.com/api/health *(Hosted on Render)*
+
+* Frontend: https://aichatbot-zeta-ochre.vercel.app/
+* Backend health check: https://aichatbot-79nb.onrender.com/api/health
 
 ---
 
-## Tech-Stack & AI Integration
+## ✨ Key Features
 
-* **Frontend:** React.js, Vite, Vanilla js.
-* **Backend:** Node.js, Express.js (v5.x), Mongoose.
-* **Database:** MongoDB (Atlas).
-* **AI Provider:** **Google Gemini API** using the official, high-efficiency `@google/genai` SDK and the `gemini-3.6-flash`(cause it was free and fastest available) model.
-
----
-
-## Data Modeling
-
-The database is built on a single collection designed for simplicity.
-
-### Collection: `conversations`
-Mongoose schema structure:
-* **`userId`** (`String`, Indexed): Stores either a unique Google identifier (e.g., `google:<sub_id>`) or a normalized string name (e.g., `name:alex`) for guest visitors.
-* **`userName`** (`String`): The display name of the user.
-* **`userEmail`** (`String`, Optional): Google email address when signed in via OAuth.
-* **`title`** (`String`): A generated title derived from the first message sent in the thread.
-* **`messages`**: An embedded array of message sub-documents:
-  * **`role`** (`String`, Enum `['user', 'assistant']`): Tracks who sent the message.
-  * **`content`** (`String`): The plaintext message body.
-  * **`createdAt`** (`Date`): Timestamp automatically populated for each individual message.
-
-### Why This Model Was Selected:
-1. **High Read Performance:** By embedding messages directly inside the parent conversation document, we load the entire chat history in a single, fast O(1) query without performing complex database joins.
-2. **Simplified Relationships:** Linking conversations to users via a simple indexed `userId` allows easy querying of historical archives.
-3. **Atomic Writes:** Appending messages to an array is atomic in MongoDB, preventing write collision issues in multi-tab sessions.
+* Google Gemini integration with `gemini-3.6-flash`
+* Multi-turn conversation memory
+* Modern glassmorphic dark UI
+* Markdown rendering with syntax-highlighted code blocks and copy buttons
+* Persistent chat history in MongoDB
+* Google OAuth and guest name sign-in
+* Express validation and graceful error handling
 
 ---
 
-##  Project Organization
+## 🛠️ Technology Stack
 
-The repository is divided into two self-contained directories:
+* Frontend: React 19, Vite 6, Vanilla CSS
+* Backend: Node.js 18+, Express 5, Mongoose 8
+* Database: MongoDB (local or Atlas)
+* AI: Google Gemini API via `@google/genai`
+* Auth: Google Identity Services + `google-auth-library`
+
+---
+
+## 📂 Project Structure
 
 ```text
-CyVigilant_cs/
+AIchatbot/
 ├── backend/
-│   ├── server.js          # REST Server, AI integration, Google ID validation, & routes
-│   ├── package.json       # Backend script definitions and modules
-│   └── .env.example       # Example template for backend environments
+│   ├── server.js          # REST server, Gemini AI integration, auth, and history routes
+│   ├── package.json       # Backend dependencies and scripts
+│   ├── .env.example       # Example backend environment config
+│   └── .env               # Local environment settings (ignored by git)
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatWindow.jsx       # Chat window, composer, and messages list
-│   │   │   ├── HistoryDrawer.jsx    # Sidebar drawer for chat histories
-│   │   │   └── IdentityPrompt.jsx   # Portal entrance (Guest name entry / Google Sign-In)
-│   │   ├── api.js         # Centralized HTTP request helper
-│   │   ├── App.jsx        # Root component handling application state and logic
-│   │   ├── main.jsx       # App entrypoint
-│   │   └── styles.css     # UI design styles, variables, and typography
-│   ├── package.json       # React / Vite packages
-│   └── .env.example       # Example template for frontend environment
-└── README.md
+│   ├── index.html         # App entry HTML with Google Identity client
+│   ├── package.json       # Frontend dependencies and scripts
+│   ├── vite.config.js     # Vite configuration
+│   ├── .env.example       # Example frontend environment config
+│   ├── .env               # Local environment settings (ignored by git)
+│   └── src/
+│       ├── App.jsx        # App shell and state management
+│       ├── api.js         # Shared API helper
+│       ├── main.jsx       # React entry point
+│       ├── styles.css     # Design system and layout styling
+│       └── components/
+│           ├── ChatWindow.jsx
+│           ├── HistoryDrawer.jsx
+│           ├── IdentityPrompt.jsx
+│           └── MarkdownRenderer.jsx
+├── README.md
+└── package-lock.json
 ```
 
 ---
 
-## Environment Configuration & Installation
+## ⚙️ Quick Start & Setup
 
 ### Prerequisites
-* Node.js 18 or newer.
-* A running MongoDB database (local or Atlas cluster).
-* A **Gemini API Key** (obtainable from Google AI Studio).
-* An optional **Google OAuth Client ID** (from Google Cloud Console).
 
----
+* Node.js 18 or newer
+* MongoDB running locally or an Atlas connection string
+* A Gemini API key from Google AI Studio
+* Optional Google OAuth client ID
 
-### Step 1: Clone and Configure the Backend
-1. Navigate to the `backend/` directory:
+### Step 1: Backend Setup
+
+1. Open a terminal and go to the backend folder:
    ```bash
    cd backend
    ```
-2. Copy the environment template:
+
+2. Copy the example environment file:
    ```bash
-   cp .env.example .env
+   copy .env.example .env
    ```
-3. Populate your `.env` values:
+
+3. Update `.env` with your values:
    ```env
-   GEMINI_API_KEY=your_gemini_api_key
+   GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_MODEL=gemini-3.6-flash
-   MONGODB_URI=mongodb://127.0.0.1:27017/cyvigilant_support
+   MONGODB_URI=mongodb://127.0.0.1:27017/aichatbot
    PORT=3060
    FRONTEND_URL=http://localhost:5173
    GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   DNS_SERVERS=8.8.8.8,1.1.1.1
    ```
-4. Install dependencies and start the developer server:
+
+4. Install dependencies and run the backend:
    ```bash
    npm install
    npm run dev
    ```
-   The backend API will run at `http://localhost:3060`.
 
----
+### Step 2: Frontend Setup
 
-### Step 2: Configure the Frontend
-1. Navigate to the `frontend/` directory:
+1. Open a new terminal and go to the frontend folder:
    ```bash
-   cd ../frontend
+   cd frontend
    ```
-2. Copy the environment template:
+
+2. Copy the example frontend env file:
    ```bash
-   cp .env.example .env
+   copy .env.example .env
    ```
-3. Update the `.env` settings:
+
+3. Set values in `.env`:
    ```env
    VITE_API_URL=http://localhost:3060
    VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
    ```
-4. Install dependencies and start the dev server:
+
+4. Start the app:
    ```bash
    npm install
    npm run dev
    ```
-   Open `http://localhost:5173` in your browser.
+
+Open http://localhost:5173 in your browser.
 
 ---
 
-## API Documentation
+## 📡 API Endpoints
 
-### `POST /api/chat`
-Creates or appends a message to a conversation thread.
-* **Headers:** `Authorization: Bearer <Google_Token>` (Optional for guest users)
-* **Request Body:**
-  ```json
-  {
-    "conversationId": "65ebd1692e85ab361cc38ab4", // Optional (create new if omitted)
-    "userName": "Alex", // Required for guest identity
-    "message": "Hello, how do I reset my password?"
+### 1. POST /api/chat
+
+Create or continue a conversation and get an AI reply.
+
+Request body:
+```json
+{
+  "conversationId": "65ebd1692e85ab361cc38ab4",
+  "userName": "Alex",
+  "message": "Explain how async/await works in JavaScript."
+}
+```
+
+Response:
+```json
+{
+  "conversationId": "65ebd1692e85ab361cc38ab4",
+  "message": {
+    "role": "assistant",
+    "content": "Async/await in JavaScript provides...",
+    "createdAt": "2026-09-30T07:15:00.000Z"
   }
-  ```
-* **Success Response:** `200 OK`
-  ```json
-  {
-    "conversationId": "65ebd1692e85ab361cc38ab4",
-    "message": {
-      "role": "assistant",
-      "content": "To reset your password...",
-      "createdAt": "2026-08-20T04:40:00.000Z"
-    }
-  }
-  ```
+}
+```
 
-### `GET /api/chat/history`
-Retrieves all historical conversations matching the active identity.
-* **Query Parameter:** `?userName=Alex` (Used if Google Token is not present)
-* **Success Response:** `200 OK` returns list of conversations sorted by latest updates first.
+### 2. GET /api/chat/history
 
-### `GET /api/chat/history/:id`
-Retrieves detail contents (including message arrays) of a specific conversation.
+Returns conversations for the current user identity.
 
-### `DELETE /api/chat/history/:id`
-Permanently deletes a conversation from history.
+### 3. GET /api/chat/history/:id
 
-### `GET /api/health`
-Responds with server uptime and current database connection status.
+Returns a single conversation with its full message history.
 
+### 4. DELETE /api/chat/history/:id
+
+Deletes a conversation by ID.
+
+### 5. GET /api/health
+
+Returns the server status and MongoDB connection state.
+
+---
+
+## 🧠 Data Model
+
+The app stores each conversation as a document with embedded messages for fast reads and simple access patterns.
+
+Fields include:
+
+* `userId` — unique guest or Google identity key
+* `userName` — user display name
+* `userEmail` — optional Google email address
+* `title` — generated conversation title
+* `messages[]` — message objects with role, content, and createdAt
+
+---
+
+## 🛡️ License
+
+MIT License.
