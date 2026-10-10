@@ -1,8 +1,8 @@
-# AI Chatbot
+# Chat Application
 
-An intelligent, full-stack conversational AI application built with React, Node.js, Express, MongoDB, and the Google Gemini API using the official `@google/genai` SDK.
+A full-stack chat application built with React, Node.js, Express, MongoDB, and a backend AI service for generating responses.
 
-This project includes a polished dark-mode interface, guest and Google auth flows, persistent conversation history, markdown rendering, and AI-powered chat responses.
+This project includes a polished dark-mode interface, guest and Google auth flows, persistent conversation history, markdown rendering, and chat responses.
 
 ---
 
@@ -15,7 +15,7 @@ This project includes a polished dark-mode interface, guest and Google auth flow
 
 ## ✨ Key Features
 
-* Google Gemini integration with `gemini-3.6-flash`
+* Backend AI integration for generating responses
 * Multi-turn conversation memory
 * Modern glassmorphic dark UI
 * Markdown rendering with syntax-highlighted code blocks and copy buttons
