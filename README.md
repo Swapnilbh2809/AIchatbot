@@ -13,7 +13,7 @@ This project includes a polished dark-mode interface, guest and Google auth flow
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 * Backend AI integration for generating responses
 * Multi-turn conversation memory
@@ -25,7 +25,7 @@ This project includes a polished dark-mode interface, guest and Google auth flow
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 * Frontend: React 19, Vite 6, Vanilla CSS
 * Backend: Node.js 18+, Express 5, Mongoose 8
@@ -35,7 +35,7 @@ This project includes a polished dark-mode interface, guest and Google auth flow
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 AIchatbot/
@@ -66,7 +66,7 @@ AIchatbot/
 
 ---
 
-## ⚙️ Quick Start & Setup
+##  Quick Start & Setup
 
 ### Prerequisites
 
@@ -132,7 +132,7 @@ Open http://localhost:5173 in your browser.
 
 ---
 
-## 📡 API Endpoints
+##  API Endpoints
 
 ### 1. POST /api/chat
 
@@ -177,7 +177,7 @@ Returns the server status and MongoDB connection state.
 
 ---
 
-## 🧠 Data Model
+## Data Model
 
 The app stores each conversation as a document with embedded messages for fast reads and simple access patterns.
 
@@ -191,6 +191,4 @@ Fields include:
 
 ---
 
-## 🛡️ License
 
-MIT License.
